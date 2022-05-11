@@ -17,11 +17,11 @@
 
 package dynamicswordskills.skills;
 
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.EntityPlayer;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import dynamicswordskills.network.server.TargetIdPacket;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.player.EntityPlayer;
 
 /**
  * 
