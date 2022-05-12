@@ -29,9 +29,6 @@ import com.google.common.collect.Lists;
 import cpw.mods.fml.common.Optional.Method;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
-import dynamicswordskills.DynamicSwordSkills;
-import mods.battlegear2.api.weapons.Attributes;
-import mods.battlegear2.api.weapons.IExtendedReachWeapon;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
@@ -39,7 +36,6 @@ import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.IRangedAttackMob;
 import net.minecraft.entity.SharedMonsterAttributes;
-import net.minecraft.entity.ai.attributes.AttributeModifier;
 import net.minecraft.entity.ai.attributes.IAttributeInstance;
 import net.minecraft.entity.monster.IMob;
 import net.minecraft.entity.player.EntityPlayer;
@@ -76,10 +72,6 @@ public class TargetUtils
 	 * NetHandlerPlayServer#processUseEntity.
 	 */
 	public static double getReachDistanceSq(EntityPlayer player) {
-		if (DynamicSwordSkills.isBG2Enabled) {
-			float reach = getBattlegearReachDistance(player);
-			return reach * reach;
-		}
 		return player.capabilities.isCreativeMode ? 36.0D : 12.0D;
 	}
 
@@ -91,9 +83,8 @@ public class TargetUtils
 			return reachMod - 2.2F; //Reduce bare hands range
 		} else if (mainhand.getItem() instanceof ItemBlock) {
 			return reachMod - 2.1F; //Reduce block in hands range too
-		} else if (mainhand.getItem() instanceof IExtendedReachWeapon) {
-			reachMod = ((IExtendedReachWeapon) mainhand.getItem()).getReachModifierInBlocks(mainhand);
 		}
+		
 		return reachMod;
 	}
 
@@ -109,35 +100,14 @@ public class TargetUtils
 	 * For Battlegear2, applies an extended reach attribute modifier sufficient to allow the player to attack targets at the given range.
 	 */
 	public static void applyExtendedReachModifier(EntityPlayer player, double range) {
-		if (!DynamicSwordSkills.isBG2Enabled) {
-			return;
-		}
-		double reach = Math.sqrt(getReachDistanceSq(player));
-		if (reach < range) {
-			TargetUtils.removeExtendedReachModifier(player);
-			IAttributeInstance instance = player.getEntityAttribute(Attributes.extendedReach);
-			if (instance != null) {
-				double mod = range - reach;
-				AttributeModifier modifier = (new AttributeModifier(reachModifierID, "Skill Reach Modifier", mod, 0)).setSaved(false);
-				instance.applyModifier(modifier);
-			}
-		}
+		return;
 	}
 
 	/**
 	 * For Battlegear2, removes the extended reach attribute modifier applied by {@link #applyExtendedReachModifier(EntityPlayer, double)}
 	 */
 	public static void removeExtendedReachModifier(EntityPlayer player) {
-		if (!DynamicSwordSkills.isBG2Enabled) {
-			return;
-		}
-		IAttributeInstance instance = player.getEntityAttribute(Attributes.extendedReach);
-		if (instance != null) {
-			AttributeModifier prev = instance.getModifier(reachModifierID);
-			if (prev != null) {
-				instance.removeModifier(prev);
-			}
-		}
+		return;
 	}
 
 	/**

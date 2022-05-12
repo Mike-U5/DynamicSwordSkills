@@ -113,7 +113,11 @@ public class MortalDraw extends SkillActive
 
 	@Override
 	protected float getExhaustion() {
-		return 3.0F - (0.2F * level);
+		return 3.0F - (0.2F * this.getBladeLevel());
+	}
+	
+	protected int getBladeLevel() {
+		return 5;
 	}
 
 	/**
@@ -121,12 +125,12 @@ public class MortalDraw extends SkillActive
 	 * Set the attackTimer to this amount upon activation.
 	 */
 	private int getAttackTime() {
-		return level + DELAY + 2;
+		return this.getBladeLevel() + DELAY + 2;
 	}
 
 	/** Returns the amount by which damage will be increased, as a percent: [damage + (damage * x)] */
 	private int getDamageMultiplier() {
-		return 100 + (10 * level);
+		return 100 + (10 * this.getBladeLevel());
 	}
 
 	@Override
@@ -147,11 +151,7 @@ public class MortalDraw extends SkillActive
 		boolean needsDummy = (DSSPlayerInfo.get(player).getTrueSkillLevel(Skills.swordBasic) < 1);
 		for (int i = 0; i < 9; ++i) {
 			ItemStack stack = player.inventory.getStackInSlot(i);
-			if (stack != null 
-					&& ((plvl > 0 && PlayerUtils.isSword(stack)) || PlayerUtils.isProvider(stack, Skills.mortalDraw))
-					&& (!needsDummy || PlayerUtils.isProvider(stack, Skills.swordBasic))
-					)
-			{
+			if (stack != null && ((plvl > 0 && PlayerUtils.isSword(stack)) || PlayerUtils.isProvider(stack, Skills.mortalDraw)) && (!needsDummy || PlayerUtils.isProvider(stack, Skills.swordBasic))) {
 				return i;
 			}
 		}

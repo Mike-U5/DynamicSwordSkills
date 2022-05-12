@@ -77,9 +77,6 @@ public class DynamicSwordSkills
 	/** Expected FPS used as a reference to normalize e.g. client-side motion adjustments */
 	public static final float BASE_FPS = 30F;
 
-	/** Whether Battlegear2 mod is loaded */
-	public static boolean isBG2Enabled;
-
 	public static CreativeTabs tabSkills;
 
 	public static Item skillOrb;
@@ -99,7 +96,6 @@ public class DynamicSwordSkills
 		if (Loader.isModLoaded("zeldaswordskills")) {
 			throw new RuntimeException("Dynamic Sword Skills may not be loaded at the same time as Zelda Sword Skills! Please remove one or the other.");
 		}
-		isBG2Enabled = Loader.isModLoaded("battlegear2");
 		Skills.init();
 		Config.init(event);
 		tabSkills = new CreativeTabs("dss.skills") {

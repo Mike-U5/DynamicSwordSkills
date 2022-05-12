@@ -54,7 +54,7 @@ import net.minecraftforge.common.util.Constants;
 public abstract class SkillBase
 {
 	/** Default maximum skill level */
-	public static final byte MAX_LEVEL = 5;
+	public static final byte MAX_LEVEL = 1;
 
 	/** Unique ResourceLocation for this skill */
 	private ResourceLocation registryName = null;

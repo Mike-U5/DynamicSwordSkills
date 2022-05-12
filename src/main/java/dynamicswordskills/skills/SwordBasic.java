@@ -121,28 +121,27 @@ public class SwordBasic extends SkillActive implements IComboSkill, ILockOnTarge
 		return 0.0F;
 	}
 
-	@Override
-	public byte getMaxLevel() {
-		return (MAX_LEVEL * 2);
-	}
-
 	/** Returns amount of time allowed between successful attacks before combo terminates */
 	private final int getComboTimeLimit() {
-		return (20 + (level * 2));
+		return (20 + (this.getBladeLevel() * 2));
+	}
+	
+	protected int getBladeLevel() {
+		return 10;
 	}
 
 	/** Returns the max combo size attainable (2 plus skill level) */
 	private final int getMaxComboSize() {
-		return (2 + level);
+		return (2 + this.getBladeLevel());
 	}
 
 	/** Returns max distance at which targets may be acquired or remain targetable */
 	private final int getRange() {
-		return (6 + level);
+		return (6 + this.getBladeLevel());
 	}
 
 	private float getDamageTolerance() {
-		return (0.5F * level);
+		return (0.5F * this.getBladeLevel());
 	}
 
 	@Override

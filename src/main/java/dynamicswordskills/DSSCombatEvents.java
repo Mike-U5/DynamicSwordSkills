@@ -125,22 +125,34 @@ public class DSSCombatEvents
 		}
 		return orb;
 	}
-
+	
 	@SubscribeEvent
-	public void onLivingDrops(LivingDropsEvent event) {
-		if (event.source.getEntity() instanceof EntityPlayer) {
-			EntityLivingBase mob = event.entityLiving;
-			ItemStack orb = getOrbDrop(mob);
-			if (orb != null && (Config.areOrbDropsEnabled() || (Config.arePlayerDropsEnabled() && event.entity instanceof EntityPlayer))) {
-				float baseChance = Config.getDropChance(orb.getItemDamage());
-				if (baseChance > 0.0F && mob.worldObj.rand.nextFloat() < (baseChance + (0.005F * event.lootingLevel))) {
-					event.drops.add(new EntityItem(mob.worldObj, mob.posX, mob.posY, mob.posZ, orb.copy()));
-					mob.worldObj.playSoundEffect(mob.posX, mob.posY, mob.posZ, ModInfo.SOUND_SPECIAL_DROP, 1.0F, 1.0F);
-				}
-			}
+	public void giveSkillsOnJoin(EntityJoinWorldEvent event) {
+		if (event.entity.dimension == 0 && event.entity instanceof EntityPlayer) {
+			final DSSPlayerInfo player = DSSPlayerInfo.get((EntityPlayer)event.entity);
+			player.grantSkill(Skills.swordBasic);
+			player.grantSkill(Skills.leapingBlow);
+			player.grantSkill(Skills.mortalDraw);
+			player.grantSkill(Skills.parry);
+			player.grantSkill(Skills.risingCut);
+			player.grantSkill(Skills.dash);
 		}
 	}
 
+//	@SubscribeEvent
+//	public void onLivingDrops(LivingDropsEvent event) {
+//		if (event.source.getEntity() instanceof EntityPlayer) {
+//			EntityLivingBase mob = event.entityLiving;
+//			ItemStack orb = getOrbDrop(mob);
+//			if (orb != null && (Config.areOrbDropsEnabled() || (Config.arePlayerDropsEnabled() && event.entity instanceof EntityPlayer))) {
+//				float baseChance = Config.getDropChance(orb.getItemDamage());
+//				if (baseChance > 0.0F && mob.worldObj.rand.nextFloat() < (baseChance + (0.005F * event.lootingLevel))) {
+//					event.drops.add(new EntityItem(mob.worldObj, mob.posX, mob.posY, mob.posZ, orb.copy()));
+//					mob.worldObj.playSoundEffect(mob.posX, mob.posY, mob.posZ, ModInfo.SOUND_SPECIAL_DROP, 1.0F, 1.0F);
+//				}
+//			}
+//		}
+//	}
 
 
 	/**
