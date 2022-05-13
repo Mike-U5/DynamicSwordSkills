@@ -17,48 +17,21 @@
 
 package dynamicswordskills;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import cpw.mods.fml.common.eventhandler.EventPriority;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.PlayerEvent.PlayerLoggedInEvent;
-import dynamicswordskills.api.IMetadataSkillItem;
-import dynamicswordskills.api.IRandomSkill;
 import dynamicswordskills.entity.DSSPlayerInfo;
 import dynamicswordskills.network.PacketDispatcher;
 import dynamicswordskills.network.client.SyncConfigPacket;
 import dynamicswordskills.ref.Config;
-import dynamicswordskills.ref.ModInfo;
 import dynamicswordskills.skills.IComboSkill;
-import dynamicswordskills.skills.SkillBase;
 import dynamicswordskills.skills.Skills;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.item.EntityItem;
-import net.minecraft.entity.monster.EntityBlaze;
-import net.minecraft.entity.monster.EntityCaveSpider;
-import net.minecraft.entity.monster.EntityCreeper;
-import net.minecraft.entity.monster.EntityEnderman;
-import net.minecraft.entity.monster.EntityGhast;
-import net.minecraft.entity.monster.EntityIronGolem;
-import net.minecraft.entity.monster.EntityMagmaCube;
-import net.minecraft.entity.monster.EntityPigZombie;
-import net.minecraft.entity.monster.EntitySilverfish;
-import net.minecraft.entity.monster.EntitySkeleton;
-import net.minecraft.entity.monster.EntitySlime;
-import net.minecraft.entity.monster.EntitySpider;
-import net.minecraft.entity.monster.EntityWitch;
-import net.minecraft.entity.monster.EntityZombie;
-import net.minecraft.entity.passive.EntityBat;
-import net.minecraft.entity.passive.EntityHorse;
-import net.minecraft.entity.passive.EntityOcelot;
+import dynamicswordskills.util.PlayerUtils;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.item.ItemStack;
 import net.minecraftforge.event.entity.EntityEvent.EntityConstructing;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.living.LivingAttackEvent;
-import net.minecraftforge.event.entity.living.LivingDropsEvent;
 import net.minecraftforge.event.entity.living.LivingEvent.LivingUpdateEvent;
 import net.minecraftforge.event.entity.living.LivingFallEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
@@ -73,59 +46,6 @@ import net.minecraftforge.event.entity.player.PlayerUseItemEvent;
  */
 public class DSSCombatEvents
 {
-	/** Mapping of mobs to skill orb drops */
-	private static final Map<Class<? extends EntityLivingBase>, ItemStack> dropsList = new HashMap<Class<? extends EntityLivingBase>, ItemStack>();
-
-	/** Adds a mob-class to skill orb mapping */
-	private static void addDrop(Class<? extends EntityLivingBase> mobClass, SkillBase skill) {
-		int damage = ((IMetadataSkillItem) DynamicSwordSkills.skillOrb).getItemDamage(skill);
-		if (damage > -1) {
-			ItemStack stack = new ItemStack(DynamicSwordSkills.skillOrb, 1, damage);
-			dropsList.put(mobClass, stack);
-		}
-	}
-
-	public static void initializeDrops() {
-		addDrop(EntityZombie.class, Skills.swordBasic);
-		addDrop(EntitySkeleton.class, Skills.swordBasic);
-		addDrop(EntityEnderman.class, Skills.dodge);
-		addDrop(EntitySilverfish.class, Skills.backSlice);
-		addDrop(EntitySlime.class, Skills.dash);
-		addDrop(EntityHorse.class, Skills.dash);
-		addDrop(EntityPigZombie.class, Skills.parry);
-		addDrop(EntityOcelot.class, Skills.mortalDraw);
-		addDrop(EntitySpider.class, Skills.endingBlow);
-		addDrop(EntityCaveSpider.class, Skills.leapingBlow);
-		addDrop(EntityMagmaCube.class, Skills.leapingBlow);
-		addDrop(EntityBlaze.class, Skills.spinAttack);
-		addDrop(EntityBat.class, Skills.risingCut);
-		addDrop(EntityCreeper.class, Skills.armorBreak);
-		addDrop(EntityIronGolem.class, Skills.swordBreak);
-		addDrop(EntityGhast.class, Skills.superSpinAttack);
-		addDrop(EntityWitch.class, Skills.swordBeam);
-	}
-
-	/**
-	 * Returns the type of skill orb that the mob will drop this time;
-	 * this is not always the same as the stack stored in dropsList
-	 */
-	private static ItemStack getOrbDrop(EntityLivingBase mob) {
-		if (dropsList.get(mob.getClass()) != null && mob.worldObj.rand.nextFloat() > Config.getChanceForRandomDrop()) {
-			return dropsList.get(mob.getClass());
-		}
-		ItemStack orb = null;
-		boolean flag = mob instanceof EntityPlayer;
-		SkillBase skill = ((IRandomSkill) DynamicSwordSkills.skillOrb).getRandomSkill(mob.worldObj.rand);
-		if (Config.isSkillAllowed(skill) && (!flag || Config.arePlayerDropsEnabled())) {
-			int damage = ((IMetadataSkillItem) DynamicSwordSkills.skillOrb).getItemDamage(skill);
-			float chance = (flag ? Config.getPlayerDropFactor() : 1) * Config.getRandomMobDropChance();
-			if (damage > -1 && (dropsList.get(mob.getClass()) != null || mob.worldObj.rand.nextFloat() < chance)) {
-				orb = new ItemStack(DynamicSwordSkills.skillOrb, 1, damage);
-			}
-		}
-		return orb;
-	}
-	
 	@SubscribeEvent
 	public void giveSkillsOnJoin(EntityJoinWorldEvent event) {
 		if (event.entity.dimension == 0 && event.entity instanceof EntityPlayer) {
@@ -137,6 +57,10 @@ public class DSSCombatEvents
 			player.grantSkill(Skills.risingCut);
 			player.grantSkill(Skills.dash);
 		}
+	}
+	
+	public static void onAttack() {
+//		PlayerUtil.isSword();
 	}
 
 //	@SubscribeEvent
@@ -186,9 +110,16 @@ public class DSSCombatEvents
 	@SubscribeEvent(priority=EventPriority.NORMAL)
 	public void onHurt(LivingHurtEvent event) {
 		if (event.source.getEntity() instanceof EntityPlayer) {
-			DSSPlayerInfo.get((EntityPlayer) event.source.getEntity()).onImpact(event);
+			final EntityPlayer player = (EntityPlayer) event.source.getEntity();
+			
+			DSSPlayerInfo.get(player).onImpact(event);
 			if (event.ammount <= 0.0F) {
 				event.setCanceled(true);
+			} else {
+				// Nerf base damage (:<
+				if (PlayerUtils.isSword(player.getHeldItem())) {
+					event.ammount = event.ammount * 0.85F;
+				}
 			}
 		}
 	}

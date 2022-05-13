@@ -17,9 +17,6 @@
 
 package dynamicswordskills;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -37,27 +34,18 @@ import cpw.mods.fml.common.event.FMLServerStartingEvent;
 import cpw.mods.fml.common.network.NetworkRegistry;
 import cpw.mods.fml.common.registry.EntityRegistry;
 import cpw.mods.fml.common.registry.GameRegistry;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
-import dynamicswordskills.api.ItemRandomSkill;
-import dynamicswordskills.api.ItemSkillProvider;
 import dynamicswordskills.api.SkillRegistry;
 import dynamicswordskills.api.WeaponRegistry;
 import dynamicswordskills.command.DSSCommands;
 import dynamicswordskills.crafting.RecipeInfuseSkillOrb;
 import dynamicswordskills.entity.EntityLeapingBlow;
 import dynamicswordskills.entity.EntitySwordBeam;
-import dynamicswordskills.item.ItemSkillOrb;
 import dynamicswordskills.network.PacketDispatcher;
 import dynamicswordskills.ref.Config;
 import dynamicswordskills.ref.ModInfo;
-import dynamicswordskills.skills.SkillActive;
 import dynamicswordskills.skills.SkillBase;
 import dynamicswordskills.skills.Skills;
-import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.Item;
-import net.minecraft.item.Item.ToolMaterial;
-import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.WeightedRandomChestContent;
 import net.minecraftforge.common.ChestGenHooks;
@@ -77,20 +65,6 @@ public class DynamicSwordSkills
 	/** Expected FPS used as a reference to normalize e.g. client-side motion adjustments */
 	public static final float BASE_FPS = 30F;
 
-	public static CreativeTabs tabSkills;
-
-	public static Item skillOrb;
-
-	public static List<Item> skillItems;
-
-	/** Various randomized skill swords */
-	public static Item
-	skillWood,
-	skillStone,
-	skillGold,
-	skillIron,
-	skillDiamond;
-
 	@Mod.EventHandler
 	public void preInit(FMLPreInitializationEvent event) {
 		if (Loader.isModLoaded("zeldaswordskills")) {
@@ -98,44 +72,6 @@ public class DynamicSwordSkills
 		}
 		Skills.init();
 		Config.init(event);
-		tabSkills = new CreativeTabs("dss.skills") {
-			@Override
-			@SideOnly(Side.CLIENT)
-			public Item getTabIconItem() {
-				return DynamicSwordSkills.skillOrb;
-			}
-		};
-		skillOrb = new ItemSkillOrb(Skills.getSkillIdMap()).setUnlocalizedName("dss.skillorb");
-		GameRegistry.registerItem(skillOrb, "skillorb");
-		if (Config.areCreativeSwordsEnabled()) {
-			skillItems = new ArrayList<Item>(SkillRegistry.getValues().size());
-			// Hack to maintain original display order
-			List<SkillBase> skills = SkillRegistry.getSortedList(SkillRegistry.SORT_BY_ID);
-			for (SkillBase skill : skills) {
-				if (!(skill instanceof SkillActive)) {
-					continue;
-				}
-				int level = (skill.getMaxLevel() == SkillBase.MAX_LEVEL ? Config.getSkillSwordLevel() : Config.getSkillSwordLevel() * 2);
-				Item item = new ItemSkillProvider(ToolMaterial.WOOD, skill, (byte) level)
-						.setTextureName("stick")
-						.setUnlocalizedName("dss.training_stick")
-						.setCreativeTab(DynamicSwordSkills.tabSkills);
-				skillItems.add(item);
-				GameRegistry.registerItem(item, "training_stick_" + skill.getRegistryName().getResourcePath());
-			}
-		}
-		if (Config.areRandomSwordsEnabled()) {
-			skillWood = new ItemRandomSkill(ToolMaterial.WOOD).setTextureName("wood_sword").setUnlocalizedName("dss.skill_sword.wood");
-			GameRegistry.registerItem(skillWood, "skill_sword_wood");
-			skillStone = new ItemRandomSkill(ToolMaterial.STONE).setTextureName("stone_sword").setUnlocalizedName("dss.skill_sword.stone");
-			GameRegistry.registerItem(skillStone, "skill_sword_stone");
-			skillIron = new ItemRandomSkill(ToolMaterial.IRON).setTextureName("iron_sword").setUnlocalizedName("dss.skill_sword.iron");
-			GameRegistry.registerItem(skillIron, "skill_sword_iron");
-			skillGold = new ItemRandomSkill(ToolMaterial.GOLD).setTextureName("gold_sword").setUnlocalizedName("dss.skill_sword.gold");
-			GameRegistry.registerItem(skillGold, "skill_sword_gold");
-			skillDiamond = new ItemRandomSkill(ToolMaterial.EMERALD).setTextureName("diamond_sword").setUnlocalizedName("dss.skill_sword.diamond");
-			GameRegistry.registerItem(skillDiamond, "skill_sword_diamond");
-		}
 		EntityRegistry.registerModEntity(EntityLeapingBlow.class, "leapingblow", 0, this, 64, 10, true);
 		EntityRegistry.registerModEntity(EntitySwordBeam.class, "swordbeam", 1, this, 64, 10, true);
 		PacketDispatcher.initialize();
@@ -156,13 +92,6 @@ public class DynamicSwordSkills
 	@Mod.EventHandler
 	public void postInit(FMLPostInitializationEvent event) {
 		Config.postInit();
-		DSSCombatEvents.initializeDrops();
-		if (Config.getOrbLootWeight() > 0) {
-			registerSkillOrbLoot();
-		}
-		if (Config.areRandomSwordsEnabled() && Config.getSkillSwordLootWeight() > 0) {
-			registerRandomSwordLoot();
-		}
 	}
 
 	@Mod.EventHandler
@@ -213,23 +142,6 @@ public class DynamicSwordSkills
 				}
 			}
 		};
-	}
-
-	private void registerSkillOrbLoot() {
-		for (ResourceLocation location : Skills.getSkillIdMap().values()) {
-			SkillBase skill = SkillRegistry.get(location);
-			if (Config.isSkillAllowed(skill)) {
-				addLootToAll(new WeightedRandomChestContent(new ItemStack(skillOrb, 1, skill.getId()), 1, 1, Config.getOrbLootWeight()), false);
-			}
-		}
-	}
-
-	private void registerRandomSwordLoot() {
-		addLootToAll(new WeightedRandomChestContent(new ItemStack(skillWood), 1, 1, Config.getSkillSwordLootWeight() * 2), false);
-		addLootToAll(new WeightedRandomChestContent(new ItemStack(skillStone), 1, 1, Config.getSkillSwordLootWeight()), false);
-		addLootToAll(new WeightedRandomChestContent(new ItemStack(skillGold), 1, 1, Config.getSkillSwordLootWeight()), false);
-		addLootToAll(new WeightedRandomChestContent(new ItemStack(skillIron), 1, 1, Config.getSkillSwordLootWeight() * 2), false);
-		addLootToAll(new WeightedRandomChestContent(new ItemStack(skillDiamond), 1, 1, Config.getSkillSwordLootWeight()), false);
 	}
 
 	/**

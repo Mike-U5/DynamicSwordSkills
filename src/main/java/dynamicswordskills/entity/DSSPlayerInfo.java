@@ -30,7 +30,6 @@ import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import dynamicswordskills.DynamicSwordSkills;
 import dynamicswordskills.api.IComboDamage;
-import dynamicswordskills.api.IMetadataSkillItem;
 import dynamicswordskills.api.ISkillProvider;
 import dynamicswordskills.api.SkillRegistry;
 import dynamicswordskills.network.PacketDispatcher;
@@ -862,16 +861,6 @@ public class DSSPlayerInfo implements IExtendedEntityProperties
 		}
 	}
 
-	/**
-	 * If player has not received starting gear, it is provided
-	 */
-	public void verifyStartingGear() {
-		if (!receivedGear && Config.giveBonusOrb()) {
-			int damage = ((IMetadataSkillItem) DynamicSwordSkills.skillOrb).getItemDamage(Skills.swordBasic);
-			receivedGear = player.inventory.addItemStackToInventory(new ItemStack(DynamicSwordSkills.skillOrb, 1, damage));
-		}
-	}
-
 	/** Used to register these extended properties for the player during EntityConstructing event */
 	public static final void register(EntityPlayer player) {
 		player.registerExtendedProperties(EXT_PROP_NAME, new DSSPlayerInfo(player));
@@ -886,7 +875,7 @@ public class DSSPlayerInfo implements IExtendedEntityProperties
 	 * Call when the player logs in for the first time
 	 */
 	public void onPlayerLoggedIn() {
-		verifyStartingGear();
+		// Give skills here!
 	}
 
 	/**

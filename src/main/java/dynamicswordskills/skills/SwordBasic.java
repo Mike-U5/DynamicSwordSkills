@@ -123,7 +123,7 @@ public class SwordBasic extends SkillActive implements IComboSkill, ILockOnTarge
 
 	/** Returns amount of time allowed between successful attacks before combo terminates */
 	private final int getComboTimeLimit() {
-		return (20 + (this.getBladeLevel() * 2));
+		return 40; // 20 ~ 40
 	}
 	
 	protected int getBladeLevel() {
@@ -132,12 +132,12 @@ public class SwordBasic extends SkillActive implements IComboSkill, ILockOnTarge
 
 	/** Returns the max combo size attainable (2 plus skill level) */
 	private final int getMaxComboSize() {
-		return (2 + this.getBladeLevel());
+		return 50; // 2 ~ 12
 	}
 
 	/** Returns max distance at which targets may be acquired or remain targetable */
 	private final int getRange() {
-		return (6 + this.getBladeLevel());
+		return 48; // 6 + 10
 	}
 
 	private float getDamageTolerance() {
@@ -321,7 +321,8 @@ public class SwordBasic extends SkillActive implements IComboSkill, ILockOnTarge
 	@Override
 	public float onImpact(EntityPlayer player, EntityLivingBase entity, float amount) {
 		if (combo != null && !combo.isFinished()) {
-			amount += combo.getNumHits();
+			final float damageBonus = (combo.getNumHits() + 1) * 0.03F;
+			amount *= 1F + Math.min(damageBonus, 0.3F);
 		}
 		return amount;
 	}

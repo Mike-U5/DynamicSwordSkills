@@ -62,11 +62,11 @@ public class PlayerUtils
 	 * or registered to the {@link WeaponRegistry} as a sword
 	 */
 	public static boolean isSword(ItemStack stack) {
-		if (stack == null) {
-			return false;
-		} else if (stack.getItem() instanceof IWeapon) {
-			return ((IWeapon) stack.getItem()).isSword(stack);
-		}
+//		if (stack == null) {
+//			return false;
+//		} else if (stack.getItem() instanceof IWeapon) {
+//			return ((IWeapon) stack.getItem()).isSword(stack);
+//		}
 		return WeaponRegistry.INSTANCE.isSword(stack.getItem());
 	}
 
@@ -75,12 +75,7 @@ public class PlayerUtils
 	 * an {@link IWeapon}, or registered to the {@link WeaponRegistry} as a weapon
 	 */
 	public static boolean isWeapon(ItemStack stack) {
-		if (stack == null) {
-			return false;
-		} else if (stack.getItem() instanceof IWeapon) {
-			return ((IWeapon) stack.getItem()).isWeapon(stack);
-		}
-		return (isSword(stack) || WeaponRegistry.INSTANCE.isWeapon(stack.getItem()));
+		return isSword(stack);
 	}
 
 	/** Returns true if the stack is either a {@link #isSword(ItemStack) sword} or {@link #isProvider(ItemStack, SkillBase) provider} of this skill */
