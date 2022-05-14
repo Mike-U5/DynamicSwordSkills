@@ -23,7 +23,6 @@ import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import dynamicswordskills.api.SkillGroup;
 import dynamicswordskills.client.DSSKeyHandler;
-import dynamicswordskills.entity.DSSPlayerInfo;
 import dynamicswordskills.ref.Config;
 import dynamicswordskills.ref.ModInfo;
 import dynamicswordskills.util.PlayerUtils;
@@ -31,9 +30,14 @@ import dynamicswordskills.util.TargetUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.boss.IBossDisplayData;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.projectile.EntityArrow;
+import net.minecraft.potion.Potion;
+import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.StatCollector;
+import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
 
 /**
@@ -104,22 +108,26 @@ public class Parry extends SkillActive
 
 	@Override
 	protected float getExhaustion() {
-		return 0.3F - (0.02F * level);
+		return 0.2F;
+//		return 0.3F - (0.02F * level);
 	}
 
 	/** Number of ticks that skill will be considered active */
 	private int getActiveTime() {
-		return 9 + (level / 2);
+		return 11;
+//		return 9 + (level / 2);
 	}
 
 	/** Number of ticks before player may attempt to use this skill again */
 	private int getParryDelay() {
-		return (5 - (level / 2));
+		return 5;
+//		return (5 - (level / 2));
 	}
 
 	/** The maximum number of attacks that may be parried per use of the skill */
 	private int getMaxParries() {
-		return (1 + level) / 2;
+		return 3;
+//		return (1 + level) / 2;
 	}
 
 	/**
@@ -127,26 +135,27 @@ public class Parry extends SkillActive
 	 * @param attacker if the attacker is an EntityPlayer, their Parry score will decrease their chance of being disarmed
 	 */
 	private float getDisarmChance(EntityPlayer player, EntityLivingBase attacker) {
-		float penalty = 0.05F * attacksParried;
-		float bonus = Config.getDisarmTimingBonus() * (parryTimer > 0 ? (parryTimer - getParryDelay()) : 0);
-		if (attacker instanceof EntityPlayer) {
-			penalty += Config.getDisarmPenalty() * DSSPlayerInfo.get((EntityPlayer) attacker).getSkillLevel(this);
-		}
-		return ((level * 0.1F) - penalty + bonus);
+//		float penalty = 0.05F * attacksParried;
+//		float bonus = Config.getDisarmTimingBonus() * (parryTimer > 0 ? (parryTimer - getParryDelay()) : 0);
+//		if (attacker instanceof EntityPlayer) {
+//			penalty += Config.getDisarmPenalty() * DSSPlayerInfo.get((EntityPlayer) attacker).getSkillLevel(this);
+//		}
+//		return ((level * 0.1F) - penalty + bonus);
+//		
+		return 0;
 	}
 
 	/**
 	 * Returns the strength of the knockback effect when an attack is parried
 	 */
 	public float getKnockbackStrength() {
-		return 0.4F; // 0.5F is the base line per blocking with a shield
+		return 0.5F;
+//		return 0.4F;
 	}
 
 	@Override
 	public boolean canUse(EntityPlayer player) {
-		return super.canUse(player) && !isActive() 
-				&& !player.isUsingItem() 
-				&& PlayerUtils.isWeapon(player.getHeldItem());
+		return super.canUse(player) && !isActive() && !player.isUsingItem() && PlayerUtils.isWeapon(player.getHeldItem());
 	}
 
 	@Override
@@ -184,6 +193,7 @@ public class Parry extends SkillActive
 			ticksTilFail = 0;
 			keysPressed = 0;
 		}
+		
 		return false;
 	}
 
@@ -206,7 +216,7 @@ public class Parry extends SkillActive
 		if (isActive()) {
 			if (--parryTimer <= getParryDelay() && playMissSound) {
 				playMissSound = false;
-				PlayerUtils.playSoundAtEntity(player.worldObj, player, ModInfo.SOUND_SWORDMISS, 0.4F, 0.5F);
+				PlayerUtils.playSoundAtEntity(player.worldObj, player, ModInfo.SOUND_PARRY_MISS, 1F, 1.2F + (player.worldObj.rand.nextFloat() * 0.3F));
 			}
 		} else if (player.worldObj.isRemote && ticksTilFail > 0) {
 			--ticksTilFail;
@@ -218,19 +228,45 @@ public class Parry extends SkillActive
 
 	@Override
 	public boolean onBeingAttacked(EntityPlayer player, DamageSource source) {
-		if (source.getEntity() instanceof EntityLivingBase) {
-			EntityLivingBase attacker = (EntityLivingBase) source.getEntity();
+		if (source.getEntity() instanceof EntityArrow) {
+			final EntityArrow arrow = (EntityArrow)source.getEntity();
+			//arrow.setVelocity(0, 0, 0);
+			arrow.shootingEntity = player;
+			
+			// Reflect
+			final Vec3 look = player.getLookVec();
+		    
+		    // and return it to the sender
+		    // calc speed of the projectile
+		    double speed = arrow.motionX * arrow.motionX + arrow.motionY * arrow.motionY + arrow.motionZ * arrow.motionZ;
+		    speed = Math.sqrt(speed);
+		    speed += 0.2f; // we add a bit speed
+
+		    // and redirect it to where the player is looking
+		    arrow.setVelocity(look.xCoord * speed, look.yCoord * speed, look.zCoord * speed);
+		    arrow.rotationYaw = (float)(Math.atan2(arrow.motionX, arrow.motionZ) * 180.0D / Math.PI);
+		    arrow.rotationPitch = (float)(Math.atan2(arrow.motionY, speed) * 180.0D / Math.PI);
+		} else if (source.getEntity() instanceof EntityLivingBase) {
+			final EntityLivingBase attacker = (EntityLivingBase)source.getEntity();
+			
 			if (attacksParried < getMaxParries() && parryTimer > getParryDelay() && attacker.getHeldItem() != null && PlayerUtils.isWeapon(player.getHeldItem())) {
-				if (player.worldObj.rand.nextFloat() < getDisarmChance(player, attacker)) {
-					PlayerUtils.dropHeldItem(attacker);
+				final int bonus = (parryTimer > 0) ? (parryTimer - getParryDelay()) : 0;
+
+				if (!(attacker instanceof IBossDisplayData)) {
+					attacker.addPotionEffect(new PotionEffect(Potion.weakness.id, 8 + (bonus * 2), 99));
+					attacker.addPotionEffect(new PotionEffect(Potion.moveSlowdown.id, 8 + (bonus * 2), 4));
 				}
+				
 				++attacksParried; // increment after disarm check
 				PlayerUtils.playSoundAtEntity(player.worldObj, player, ModInfo.SOUND_SWORDSTRIKE, 0.4F, 0.5F);
 				playMissSound = false;
-				TargetUtils.knockTargetBack(attacker, player, getKnockbackStrength());
+				
+//				attacker.attackEntityFrom(source, duration);
+				TargetUtils.knockTargetBack(attacker, player, 0.36F + (bonus * 0.04F));
 				return true;
 			} // don't deactivate early, as there is a delay between uses
 		}
+		
 		return false;
 	}
 }

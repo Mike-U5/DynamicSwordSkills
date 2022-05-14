@@ -113,7 +113,8 @@ public class MortalDraw extends SkillActive
 
 	@Override
 	protected float getExhaustion() {
-		return 3.0F - (0.2F * this.getBladeLevel());
+		return 2F;
+//		return 3.0F - (0.2F * this.getBladeLevel());
 	}
 	
 	protected int getBladeLevel() {
@@ -125,12 +126,13 @@ public class MortalDraw extends SkillActive
 	 * Set the attackTimer to this amount upon activation.
 	 */
 	private int getAttackTime() {
-		return this.getBladeLevel() + DELAY + 2;
+		return DELAY + 7;
 	}
 
 	/** Returns the amount by which damage will be increased, as a percent: [damage + (damage * x)] */
 	private int getDamageMultiplier() {
-		return 100 + (10 * this.getBladeLevel());
+		return 150;
+//		return 100 + (10 * this.getBladeLevel());
 	}
 
 	@Override
@@ -149,12 +151,14 @@ public class MortalDraw extends SkillActive
 	public static int getSwordSlot(EntityPlayer player) {
 		int plvl = DSSPlayerInfo.get(player).getTrueSkillLevel(Skills.mortalDraw);
 		boolean needsDummy = (DSSPlayerInfo.get(player).getTrueSkillLevel(Skills.swordBasic) < 1);
+		
 		for (int i = 0; i < 9; ++i) {
-			ItemStack stack = player.inventory.getStackInSlot(i);
+			final ItemStack stack = player.inventory.getStackInSlot(i);
 			if (stack != null && ((plvl > 0 && PlayerUtils.isSword(stack)) || PlayerUtils.isProvider(stack, Skills.mortalDraw)) && (!needsDummy || PlayerUtils.isProvider(stack, Skills.swordBasic))) {
 				return i;
 			}
 		}
+		
 		return -1;
 	}
 
@@ -170,6 +174,7 @@ public class MortalDraw extends SkillActive
 		if (!isLockedOn) {
 			return false;
 		}
+		
 		return key == mc.gameSettings.keyBindAttack;
 	}
 
@@ -183,6 +188,7 @@ public class MortalDraw extends SkillActive
 	protected boolean onActivated(World world, EntityPlayer player) {
 		attackTimer = getAttackTime();
 		target = null;
+		
 		return isActive();
 	}
 
@@ -200,7 +206,7 @@ public class MortalDraw extends SkillActive
 			if (attackTimer == DELAY && !player.worldObj.isRemote && player.getHeldItem() == null) {
 				drawSword(player, null);
 				if (player.getHeldItem() != null) {
-					PacketDispatcher.sendTo(new MortalDrawPacket(), (EntityPlayerMP) player);
+					PacketDispatcher.sendTo(new MortalDrawPacket(), (EntityPlayerMP)player);
 				}
 			}
 		}
@@ -223,12 +229,11 @@ public class MortalDraw extends SkillActive
 				}
 			}
 		}
+		
 		return false;
 	}
 
-	/**
-	 * Call upon landing a mortal draw blow
-	 */
+	/** Call upon landing a mortal draw blow */
 	@Override
 	public float onImpact(EntityPlayer player, EntityLivingBase entity, float amount) {
 		// need to check time again, due to 2-tick delay for damage prevention
@@ -239,27 +244,29 @@ public class MortalDraw extends SkillActive
 		} else { // too late - didn't defend against this target!
 			target = null;
 		}
+		
 		return amount;
 	}
 
 	/**
 	 * Returns true if the player was able to draw a sword
-	 * @return	true if the skill should be triggered (ignored on client)
+	 * @return true if the skill should be triggered (ignored on client)
 	 */
 	public boolean drawSword(EntityPlayer player, Entity attacker) {
 		boolean flag = false;
 		// letting this run on both sides is fine - client will sync from server later anyway
 		if (swordSlot > -1 && swordSlot != player.inventory.currentItem && player.getHeldItem() == null) {
-			ItemStack sword = player.inventory.getStackInSlot(swordSlot);
+			final ItemStack sword = player.inventory.getStackInSlot(swordSlot);
 			if (!player.worldObj.isRemote) {
 				player.inventory.setInventorySlotContents(swordSlot, null);
 			}
+			
 			player.setCurrentItemOrArmor(0, sword);
-			// attack will happen before entity#onUpdate refreshes equipment, so apply it now:
 			player.getAttributeMap().applyAttributeModifiers(sword.getAttributeModifiers());
-			ILockOnTarget skill = DSSPlayerInfo.get(player).getTargetingSkill();
+			final ILockOnTarget skill = DSSPlayerInfo.get(player).getTargetingSkill();
 			flag = (skill != null && skill.getCurrentTarget() == attacker);
 		}
+		
 		swordSlot = -1;
 		return flag;
 	}

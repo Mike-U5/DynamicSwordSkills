@@ -47,8 +47,6 @@ import dynamicswordskills.skills.SkillBase;
 import dynamicswordskills.skills.Skills;
 import net.minecraft.item.Item;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.WeightedRandomChestContent;
-import net.minecraftforge.common.ChestGenHooks;
 import net.minecraftforge.common.MinecraftForge;
 
 @Mod(modid = ModInfo.ID, name = ModInfo.NAME, version = ModInfo.VERSION, guiFactory = ModInfo.ID + ".client.gui.GuiFactoryConfig")
@@ -142,23 +140,6 @@ public class DynamicSwordSkills
 				}
 			}
 		};
-	}
-
-	/**
-	 * Adds weighted chest contents to all ChestGenHooks, with possible exception of Bonus Chest
-	 */
-	private void addLootToAll(WeightedRandomChestContent loot, boolean bonus) {
-		ChestGenHooks.getInfo(ChestGenHooks.MINESHAFT_CORRIDOR).addItem(loot);
-		ChestGenHooks.getInfo(ChestGenHooks.PYRAMID_DESERT_CHEST).addItem(loot);
-		ChestGenHooks.getInfo(ChestGenHooks.PYRAMID_JUNGLE_CHEST).addItem(loot);
-		ChestGenHooks.getInfo(ChestGenHooks.STRONGHOLD_CORRIDOR).addItem(loot);
-		ChestGenHooks.getInfo(ChestGenHooks.STRONGHOLD_LIBRARY).addItem(loot);
-		ChestGenHooks.getInfo(ChestGenHooks.STRONGHOLD_CROSSING).addItem(loot);
-		ChestGenHooks.getInfo(ChestGenHooks.VILLAGE_BLACKSMITH).addItem(loot);
-		ChestGenHooks.getInfo(ChestGenHooks.DUNGEON_CHEST).addItem(loot);
-		if (bonus) {
-			ChestGenHooks.getInfo(ChestGenHooks.BONUS_CHEST).addItem(loot);
-		}
 	}
 
 	/**

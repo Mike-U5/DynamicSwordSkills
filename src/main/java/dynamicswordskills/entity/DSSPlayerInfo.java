@@ -38,6 +38,7 @@ import dynamicswordskills.network.client.SyncSkillPacket;
 import dynamicswordskills.network.server.ApplySkillModifierPacket;
 import dynamicswordskills.network.server.SyncDisabledSkillsPacket;
 import dynamicswordskills.ref.Config;
+import dynamicswordskills.ref.ModInfo;
 import dynamicswordskills.skills.IComboSkill;
 import dynamicswordskills.skills.ILockOnTarget;
 import dynamicswordskills.skills.IModifiableSkill;
@@ -46,6 +47,7 @@ import dynamicswordskills.skills.MortalDraw;
 import dynamicswordskills.skills.SkillActive;
 import dynamicswordskills.skills.SkillBase;
 import dynamicswordskills.skills.Skills;
+import dynamicswordskills.util.PlayerUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.entity.Entity;
@@ -637,6 +639,14 @@ public class DSSPlayerInfo implements IExtendedEntityProperties
 					break;
 				}
 			}
+		}
+	}
+	
+	public void activateParry() {
+		if (PlayerUtils.isHoldingSword(player)) {
+			PlayerUtils.playSoundAtEntity(player.worldObj, player, ModInfo.SOUND_ARMORBREAK, 1F, 1F);
+			final SkillBase instance = getPlayerSkill(Skills.parry);
+			((SkillActive) instance).activate(player);
 		}
 	}
 

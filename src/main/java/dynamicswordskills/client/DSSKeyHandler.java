@@ -28,8 +28,10 @@ import dynamicswordskills.CommonProxy;
 import dynamicswordskills.DynamicSwordSkills;
 import dynamicswordskills.entity.DSSPlayerInfo;
 import dynamicswordskills.ref.Config;
+import dynamicswordskills.ref.ModInfo;
 import dynamicswordskills.skills.ILockOnTarget;
 import dynamicswordskills.skills.SkillActive;
+import dynamicswordskills.util.PlayerUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.util.MovingObjectPosition;
@@ -45,16 +47,19 @@ public class DSSKeyHandler
 	KEY_SKILL_ACTIVATE = 0,
 	KEY_NEXT_TARGET = 1,
 	KEY_SKILLS_GUI = 2,
-	KEY_FORWARD = 3,
-	KEY_BACK = 4,
-	KEY_LEFT = 5,
-	KEY_RIGHT = 6;
+	KEY_PARRY = 3,
+	KEY_FORWARD = 4,
+	KEY_BACK = 5,
+	KEY_LEFT = 6,
+	KEY_RIGHT = 7;
+
 
 	/** Key descriptions - this is what the player sees when changing key bindings in-game */
 	private static final String[] desc = {
 			"activate",
 			"next",
 			"skills_gui",
+			"parry",
 			"forward",
 			"back",
 			"left",
@@ -66,6 +71,7 @@ public class DSSKeyHandler
 			Keyboard.KEY_X,
 			Keyboard.KEY_TAB,
 			Keyboard.KEY_P,
+			Keyboard.KEY_RSHIFT,
 			Keyboard.KEY_UP,
 			Keyboard.KEY_DOWN,
 			Keyboard.KEY_LEFT,
@@ -145,6 +151,8 @@ public class DSSKeyHandler
 			if (isLockedOn) {
 				lock.getNextTarget(mc.thePlayer);
 			}
+		} else if (kb == keys[KEY_PARRY].getKeyCode()) {
+			skills.activateParry();
 		} else if (kb == mc.gameSettings.keyBindAttack.getKeyCode()) {
 			if (!skills.canAttack()) {
 				return true;

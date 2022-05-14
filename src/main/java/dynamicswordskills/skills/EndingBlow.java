@@ -112,7 +112,7 @@ public class EndingBlow extends SkillActive
 	@Override
 	@SideOnly(Side.CLIENT)
 	public void addInformation(List<String> desc, EntityPlayer player) {
-		desc.add(getDamageDisplay(level * 20, true) + "%");
+		desc.add(getDamageDisplay(100, true) + "%");
 		desc.add(getDurationDisplay(getDuration(), true));
 		desc.add(getExhaustionDisplay(getExhaustion()));
 	}
@@ -124,12 +124,14 @@ public class EndingBlow extends SkillActive
 
 	@Override
 	protected float getExhaustion() {
-		return 2.0F - (level * 0.1F);
+		return 1.5F;
+//		return 2.0F - (level * 0.1F);
 	}
 
 	/** Returns the duration of the defense down effect */
 	public int getDuration() {
-		return 45 - (level * 5);
+		return 20;
+//		return 45 - (level * 5);
 	}
 
 	/** Returns the {@link #lastActivationTime} */
@@ -168,8 +170,7 @@ public class EndingBlow extends SkillActive
 		if (Config.requiresLockOn() && !isLockedOn) {
 			return false;
 		}
-		return (key == mc.gameSettings.keyBindAttack || key == DSSKeyHandler.keys[DSSKeyHandler.KEY_FORWARD].getKey()
-				|| (Config.allowVanillaControls() && key == mc.gameSettings.keyBindForward));
+		return (key == mc.gameSettings.keyBindAttack || key == DSSKeyHandler.keys[DSSKeyHandler.KEY_FORWARD].getKey() || (Config.allowVanillaControls() && key == mc.gameSettings.keyBindForward));
 	}
 
 	/**
@@ -293,7 +294,8 @@ public class EndingBlow extends SkillActive
 	public void postImpact(EntityPlayer player, EntityLivingBase entity, float amount) {
 		activeTimer = 0;
 		if (entityHit != null) {
-			xp = level + 1 + player.worldObj.rand.nextInt(Math.max(2, MathHelper.ceiling_float_int(entity.getHealth())));
+			xp = 6 + player.worldObj.rand.nextInt(Math.max(2, MathHelper.ceiling_float_int(entity.getHealth())));
+//			xp = level + 1 + player.worldObj.rand.nextInt(Math.max(2, MathHelper.ceiling_float_int(entity.getHealth())));
 		}
 	}
 

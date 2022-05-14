@@ -9,6 +9,7 @@
     "swordmiss": {"category": "player","sounds": ["sword/swordmiss1","sword/swordmiss2","sword/swordmiss3","sword/swordmiss4"]},
     "swordstrike": {"category": "player","sounds": ["sword/swordstrike1","sword/swordstrike2","sword/swordstrike3","sword/swordstrike4"]},
     "whoosh": {"category": "player","sounds": ["sword/whoosh"]},
+	"parrymiss": {"category": "player","sounds": ["sword/parrymiss1","sword/parrymiss2","sword/parrymiss3"]},
     "levelup": {"category": "player","sounds":["special/levelup"]},
     "special_drop": {"category": "player","sounds":["special/special_drop"]}
 }

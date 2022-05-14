@@ -103,7 +103,16 @@ public class SwordBasic extends SkillActive implements IComboSkill, ILockOnTarge
 
 	@Override
 	public boolean canUse(EntityPlayer player) {
-		return level > 0;
+		return (level > 0 && hasSwordInHotBar(player));
+	}
+	
+	public static boolean hasSwordInHotBar(EntityPlayer player) {
+		for (int i = 0; i < 9; ++i) {
+			if (PlayerUtils.isSword(player.inventory.getStackInSlot(i))) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	@Override
@@ -118,7 +127,7 @@ public class SwordBasic extends SkillActive implements IComboSkill, ILockOnTarge
 
 	@Override
 	protected float getExhaustion() {
-		return 0.0F;
+		return 0F;
 	}
 
 	/** Returns amount of time allowed between successful attacks before combo terminates */
@@ -132,12 +141,12 @@ public class SwordBasic extends SkillActive implements IComboSkill, ILockOnTarge
 
 	/** Returns the max combo size attainable (2 plus skill level) */
 	private final int getMaxComboSize() {
-		return 50; // 2 ~ 12
+		return 999; // 2 ~ 12
 	}
 
 	/** Returns max distance at which targets may be acquired or remain targetable */
 	private final int getRange() {
-		return 48; // 6 + 10
+		return 40; // 6 + 10
 	}
 
 	private float getDamageTolerance() {
@@ -158,6 +167,7 @@ public class SwordBasic extends SkillActive implements IComboSkill, ILockOnTarge
 	protected void onDeactivated(World world, EntityPlayer player) {
 		isActive = false;
 		currentTarget = null;
+		
 		if (world.isRemote) {
 			prevTarget = null;
 		}
@@ -221,7 +231,10 @@ public class SwordBasic extends SkillActive implements IComboSkill, ILockOnTarge
 		double dTarget = 0;
 		List<EntityLivingBase> list = TargetUtils.acquireAllLookTargets(player, getRange(), getRange(), getTargetSelectors());
 		for (EntityLivingBase entity : list) {
-			if (entity == player) { continue; }
+			if (entity == player) { 
+				continue; 
+			}
+			
 			if (entity != currentTarget && entity != prevTarget && isTargetValid(player, entity)) {
 				if (nextTarget == null) {
 					dTarget = player.getDistanceSqToEntity(entity);
@@ -235,6 +248,7 @@ public class SwordBasic extends SkillActive implements IComboSkill, ILockOnTarge
 				}
 			}
 		}
+		
 		if (nextTarget != null) {
 			prevTarget = currentTarget;
 			currentTarget = nextTarget;
@@ -243,6 +257,7 @@ public class SwordBasic extends SkillActive implements IComboSkill, ILockOnTarge
 			currentTarget = prevTarget;
 			prevTarget = nextTarget;
 		}
+		
 		PacketDispatcher.sendToServer(new TargetIdPacket(this));
 	}
 
@@ -254,9 +269,11 @@ public class SwordBasic extends SkillActive implements IComboSkill, ILockOnTarge
 		if (!Config.canTargetPassiveMobs()) {
 			list.add(TargetUtils.HOSTILE_MOB_SELECTOR);
 		}
+		
 		if (!Config.canTargetPlayers()) {
 			list.add(TargetUtils.NON_PLAYER_SELECTOR);
 		}
+		
 		return list;
 	}
 
@@ -269,12 +286,14 @@ public class SwordBasic extends SkillActive implements IComboSkill, ILockOnTarge
 		if (!isTargetValid(player, prevTarget) || !TargetUtils.isTargetInSight(player, prevTarget)) {
 			prevTarget = null;
 		}
+		
 		if (!isTargetValid(player, currentTarget) || !player.canEntityBeSeen(currentTarget)) {
 			currentTarget = null;
 			if (Config.autoTargetEnabled()) {
 				getNextTarget(player);
 			}
 		}
+		
 		return isTargetValid(player, currentTarget);
 	}
 
@@ -283,9 +302,7 @@ public class SwordBasic extends SkillActive implements IComboSkill, ILockOnTarge
 	 */
 	@SideOnly(Side.CLIENT)
 	private boolean isTargetValid(EntityPlayer player, EntityLivingBase target) {
-		return (target != null && !target.isDead && target.getHealth() > 0F 
-				&& player.getDistanceToEntity(target) < (float) getRange() 
-				&& !target.isInvisible());
+		return (target != null && !target.isDead && target.getHealth() > 0F && player.getDistanceToEntity(target) < (float)getRange() && !target.isInvisible());
 	}
 
 	@Override
@@ -313,6 +330,7 @@ public class SwordBasic extends SkillActive implements IComboSkill, ILockOnTarge
 		if (PlayerUtils.isWeapon(player.getHeldItem())) {
 			PlayerUtils.playRandomizedSound(player, ModInfo.SOUND_SWORDMISS, 0.4F, 0.5F);
 		}
+		
 		if (isComboInProgress()) {
 			PacketDispatcher.sendToServer(new EndComboPacket(this));
 		}
@@ -320,19 +338,24 @@ public class SwordBasic extends SkillActive implements IComboSkill, ILockOnTarge
 
 	@Override
 	public float onImpact(EntityPlayer player, EntityLivingBase entity, float amount) {
-		if (combo != null && !combo.isFinished()) {
+		if (combo != null && !combo.isFinished() && PlayerUtils.isHoldingSword(player)) {
 			final float damageBonus = (combo.getNumHits() + 1) * 0.03F;
 			amount *= 1F + Math.min(damageBonus, 0.3F);
 		}
+		
 		return amount;
 	}
 
 	@Override
 	public void onHurtTarget(EntityPlayer player, LivingHurtEvent event) {
-		if (!isLockedOn() || !isValidComboDamage(player, event.source)) { return; }
+		if (!isLockedOn() || !isValidComboDamage(player, event.source)) { 
+			return; 
+		}
+		
 		if (combo == null || combo.isFinished()) {
 			combo = new Combo(player, this, getMaxComboSize(), getComboTimeLimit());
 		}
+		
 		float damage = DirtyEntityAccessor.getModifiedDamage(event.entityLiving, event.source, event.ammount);
 		if (damage > 0) {
 			if (!comboDamageOnlyMode && (!(event.source instanceof IComboDamageFull) || ((IComboDamageFull) event.source).increaseComboCount(player))) {
@@ -341,6 +364,7 @@ public class SwordBasic extends SkillActive implements IComboSkill, ILockOnTarge
 				combo.addDamageOnly(player, damage);
 			}
 		}
+		
 		String sound = getComboDamageSound(player, event.source);
 		if (sound != null) {
 			PlayerUtils.playSoundAtEntity(player.worldObj, player, sound, 0.4F, 0.5F);
@@ -357,6 +381,7 @@ public class SwordBasic extends SkillActive implements IComboSkill, ILockOnTarge
 		} else if (source.getDamageType().equals("player")) {
 			return (PlayerUtils.isSword(player.getHeldItem()) ? ModInfo.SOUND_SWORDCUT : ModInfo.SOUND_HURT_FLESH);
 		}
+		
 		return null;
 	}
 

@@ -608,7 +608,7 @@ public class GuiSkills extends GuiScreen
 
 		@Override
 		public boolean canAdd(@Nullable SkillSlot slot) {
-			return slot.skill == null || Config.isSkillInGroup(slot.skill, this.group);
+			return (slot.skill == null || Config.isSkillInGroup(slot.skill, this.group));
 		}
 
 		@Override

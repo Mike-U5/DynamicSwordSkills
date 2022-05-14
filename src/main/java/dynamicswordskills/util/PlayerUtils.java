@@ -49,11 +49,11 @@ public class PlayerUtils
 	 * Returns whether the player is blocking, accounting for possibility of Battlegear2 shield item use
 	 */
 	public static boolean isBlocking(EntityPlayer player) {
-		if (player.isBlocking()) {
-			return true;
-		}
-
-		return false;
+		return player.isBlocking();
+	}
+	
+	public static boolean isHoldingSword(EntityPlayer player) {
+		return isSword(player.getHeldItem());
 	}
 
 	/**
@@ -62,9 +62,10 @@ public class PlayerUtils
 	 * or registered to the {@link WeaponRegistry} as a sword
 	 */
 	public static boolean isSword(ItemStack stack) {
-//		if (stack == null) {
-//			return false;
-//		} else if (stack.getItem() instanceof IWeapon) {
+		if (stack == null) {
+			return false;
+		} 
+//		else if (stack.getItem() instanceof IWeapon) {
 //			return ((IWeapon) stack.getItem()).isSword(stack);
 //		}
 		return WeaponRegistry.INSTANCE.isSword(stack.getItem());
