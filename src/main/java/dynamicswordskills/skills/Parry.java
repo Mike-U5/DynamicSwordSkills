@@ -37,7 +37,6 @@ import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.StatCollector;
-import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
 
 /**
@@ -230,22 +229,8 @@ public class Parry extends SkillActive
 	public boolean onBeingAttacked(EntityPlayer player, DamageSource source) {
 		if (source.getEntity() instanceof EntityArrow) {
 			final EntityArrow arrow = (EntityArrow)source.getEntity();
-			//arrow.setVelocity(0, 0, 0);
 			arrow.shootingEntity = player;
-			
-			// Reflect
-			final Vec3 look = player.getLookVec();
-		    
-		    // and return it to the sender
-		    // calc speed of the projectile
-		    double speed = arrow.motionX * arrow.motionX + arrow.motionY * arrow.motionY + arrow.motionZ * arrow.motionZ;
-		    speed = Math.sqrt(speed);
-		    speed += 0.2f; // we add a bit speed
-
-		    // and redirect it to where the player is looking
-		    arrow.setVelocity(look.xCoord * speed, look.yCoord * speed, look.zCoord * speed);
-		    arrow.rotationYaw = (float)(Math.atan2(arrow.motionX, arrow.motionZ) * 180.0D / Math.PI);
-		    arrow.rotationPitch = (float)(Math.atan2(arrow.motionY, speed) * 180.0D / Math.PI);
+		    arrow.setVelocity(0, 0, 0);
 		} else if (source.getEntity() instanceof EntityLivingBase) {
 			final EntityLivingBase attacker = (EntityLivingBase)source.getEntity();
 			
@@ -261,8 +246,8 @@ public class Parry extends SkillActive
 				PlayerUtils.playSoundAtEntity(player.worldObj, player, ModInfo.SOUND_SWORDSTRIKE, 0.4F, 0.5F);
 				playMissSound = false;
 				
-//				attacker.attackEntityFrom(source, duration);
-				TargetUtils.knockTargetBack(attacker, player, 0.36F + (bonus * 0.04F));
+				attacker.attackEntityFrom(DamageSource.causePlayerDamage(player), bonus);
+				//TargetUtils.knockTargetBack(attacker, player, 0.36F + (bonus * 0.04F));
 				return true;
 			} // don't deactivate early, as there is a delay between uses
 		}

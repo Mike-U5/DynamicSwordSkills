@@ -56,7 +56,6 @@ public class DSSCombatEvents
 			player.grantSkill(Skills.parry);
 			player.grantSkill(Skills.risingCut);
 			player.grantSkill(Skills.dash);
-			player.grantSkill(Skills.endingBlow);
 		}
 	}
 	

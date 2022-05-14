@@ -33,6 +33,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.item.EnumAction;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.DamageSource;
 import net.minecraft.world.World;
@@ -253,9 +254,11 @@ public class MortalDraw extends SkillActive
 	 * @return true if the skill should be triggered (ignored on client)
 	 */
 	public boolean drawSword(EntityPlayer player, Entity attacker) {
+		final ItemStack heldItem = player.getHeldItem();
 		boolean flag = false;
+		
 		// letting this run on both sides is fine - client will sync from server later anyway
-		if (swordSlot > -1 && swordSlot != player.inventory.currentItem && player.getHeldItem() == null) {
+		if (swordSlot > -1 && swordSlot != player.inventory.currentItem && (heldItem == null || heldItem.getItemUseAction() == EnumAction.none)) {
 			final ItemStack sword = player.inventory.getStackInSlot(swordSlot);
 			if (!player.worldObj.isRemote) {
 				player.inventory.setInventorySlotContents(swordSlot, null);
