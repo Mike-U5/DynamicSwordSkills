@@ -26,7 +26,6 @@ import dynamicswordskills.client.DSSKeyHandler;
 import dynamicswordskills.ref.Config;
 import dynamicswordskills.ref.ModInfo;
 import dynamicswordskills.util.PlayerUtils;
-import dynamicswordskills.util.TargetUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.entity.EntityLivingBase;
@@ -160,16 +159,13 @@ public class Parry extends SkillActive
 	@Override
 	@SideOnly(Side.CLIENT)
 	public boolean canExecute(EntityPlayer player) {
-		return canUse(player) && keysPressed > 1 && ticksTilFail > 0;
+		return (canUse(player) && keysPressed > 1 && ticksTilFail > 0);
 	}
 
 	@Override
 	@SideOnly(Side.CLIENT)
 	public boolean isKeyListener(Minecraft mc, KeyBinding key, boolean isLockedOn) {
-		if (Config.requiresLockOn() && !isLockedOn) {
-			return false;
-		}
-		return true;
+		return (!Config.requiresLockOn() || isLockedOn);
 	}
 
 	@Override
@@ -202,6 +198,7 @@ public class Parry extends SkillActive
 		attacksParried = 0;
 		playMissSound = true;
 		player.swingItem();
+		
 		return isActive();
 	}
 
@@ -234,7 +231,7 @@ public class Parry extends SkillActive
 		} else if (source.getEntity() instanceof EntityLivingBase) {
 			final EntityLivingBase attacker = (EntityLivingBase)source.getEntity();
 			
-			if (attacksParried < getMaxParries() && parryTimer > getParryDelay() && attacker.getHeldItem() != null && PlayerUtils.isWeapon(player.getHeldItem())) {
+			if (attacksParried < getMaxParries() && parryTimer > getParryDelay() && !source.isUnblockable() && PlayerUtils.isWeapon(player.getHeldItem())) {
 				final int bonus = (parryTimer > 0) ? (parryTimer - getParryDelay()) : 0;
 
 				if (!(attacker instanceof IBossDisplayData)) {
@@ -246,8 +243,8 @@ public class Parry extends SkillActive
 				PlayerUtils.playSoundAtEntity(player.worldObj, player, ModInfo.SOUND_SWORDSTRIKE, 0.4F, 0.5F);
 				playMissSound = false;
 				
-				attacker.attackEntityFrom(DamageSource.causePlayerDamage(player), bonus);
-				//TargetUtils.knockTargetBack(attacker, player, 0.36F + (bonus * 0.04F));
+				attacker.attackEntityFrom(DamageSource.causePlayerDamage(player), ((float)bonus / 2F));
+//				TargetUtils.knockTargetBack(attacker, player, 0.36F + (bonus * 0.04F));
 				return true;
 			} // don't deactivate early, as there is a delay between uses
 		}

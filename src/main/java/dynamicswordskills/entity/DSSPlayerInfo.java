@@ -38,7 +38,6 @@ import dynamicswordskills.network.client.SyncSkillPacket;
 import dynamicswordskills.network.server.ApplySkillModifierPacket;
 import dynamicswordskills.network.server.SyncDisabledSkillsPacket;
 import dynamicswordskills.ref.Config;
-import dynamicswordskills.ref.ModInfo;
 import dynamicswordskills.skills.IComboSkill;
 import dynamicswordskills.skills.ILockOnTarget;
 import dynamicswordskills.skills.IModifiableSkill;
@@ -644,9 +643,11 @@ public class DSSPlayerInfo implements IExtendedEntityProperties
 	
 	public void activateParry() {
 		if (PlayerUtils.isHoldingSword(player)) {
-			PlayerUtils.playSoundAtEntity(player.worldObj, player, ModInfo.SOUND_ARMORBREAK, 1F, 1F);
 			final SkillBase instance = getPlayerSkill(Skills.parry);
-			((SkillActive) instance).activate(player);
+			((SkillActive)instance).activate(player);
+		} else if (player.getHeldItem() == null) {
+			final SkillBase instance = getPlayerSkill(Skills.mortalDraw);
+			((SkillActive)instance).activate(player);
 		}
 	}
 
