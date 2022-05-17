@@ -26,6 +26,7 @@ import dynamicswordskills.client.DSSKeyHandler;
 import dynamicswordskills.ref.Config;
 import dynamicswordskills.ref.ModInfo;
 import dynamicswordskills.util.PlayerUtils;
+import dynamicswordskills.util.TargetUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.entity.EntityLivingBase;
@@ -230,21 +231,22 @@ public class Parry extends SkillActive
 		    arrow.setVelocity(0, 0, 0);
 		} else if (source.getEntity() instanceof EntityLivingBase) {
 			final EntityLivingBase attacker = (EntityLivingBase)source.getEntity();
+			final boolean isParryable = (!source.isMagicDamage() && !source.isDamageAbsolute());
 			
-			if (attacksParried < getMaxParries() && parryTimer > getParryDelay() && !source.isUnblockable() && PlayerUtils.isWeapon(player.getHeldItem())) {
+			if (attacksParried < getMaxParries() && parryTimer > getParryDelay() && isParryable && PlayerUtils.isWeapon(player.getHeldItem())) {
 				final int bonus = (parryTimer > 0) ? (parryTimer - getParryDelay()) : 0;
 
 				if (!(attacker instanceof IBossDisplayData)) {
-					attacker.addPotionEffect(new PotionEffect(Potion.weakness.id, 8 + (bonus * 2), 99));
-					attacker.addPotionEffect(new PotionEffect(Potion.moveSlowdown.id, 8 + (bonus * 2), 4));
+					attacker.addPotionEffect(new PotionEffect(Potion.weakness.id, 16 + (bonus * 4), 3));
+					attacker.addPotionEffect(new PotionEffect(Potion.moveSlowdown.id, 16 + (bonus * 4), 3));
 				}
 				
 				++attacksParried; // increment after disarm check
 				PlayerUtils.playSoundAtEntity(player.worldObj, player, ModInfo.SOUND_SWORDSTRIKE, 0.4F, 0.5F);
 				playMissSound = false;
 				
-				attacker.attackEntityFrom(DamageSource.causePlayerDamage(player), ((float)bonus / 2F));
-//				TargetUtils.knockTargetBack(attacker, player, 0.36F + (bonus * 0.04F));
+//				attacker.attackEntityFrom(DamageSource.causePlayerDamage(player), ((float)bonus / 2F));
+				TargetUtils.knockTargetBack(attacker, player, 0.36F + (bonus * 0.04F));
 				return true;
 			} // don't deactivate early, as there is a delay between uses
 		}
