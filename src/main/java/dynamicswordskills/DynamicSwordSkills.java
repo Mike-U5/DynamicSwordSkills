@@ -37,7 +37,6 @@ import cpw.mods.fml.common.registry.GameRegistry;
 import dynamicswordskills.api.SkillRegistry;
 import dynamicswordskills.api.WeaponRegistry;
 import dynamicswordskills.command.DSSCommands;
-import dynamicswordskills.crafting.RecipeInfuseSkillOrb;
 import dynamicswordskills.entity.EntityLeapingBlow;
 import dynamicswordskills.entity.EntitySwordBeam;
 import dynamicswordskills.network.PacketDispatcher;
@@ -84,7 +83,6 @@ public class DynamicSwordSkills
 		NetworkRegistry.INSTANCE.registerGuiHandler(this, proxy);
 		String link = "https://raw.githubusercontent.com/coolAlias/DynamicSwordSkills/master/src/main/resources/versionlist.json";
 		FMLInterModComms.sendRuntimeMessage(ModInfo.ID, "VersionChecker", "addVersionCheck", link);
-		GameRegistry.addRecipe(new RecipeInfuseSkillOrb());
 	}
 
 	@Mod.EventHandler

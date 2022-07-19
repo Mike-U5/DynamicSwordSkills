@@ -50,12 +50,13 @@ public class DSSCombatEvents
 	public void giveSkillsOnJoin(EntityJoinWorldEvent event) {
 		if (event.entity.dimension == 0 && event.entity instanceof EntityPlayer) {
 			final DSSPlayerInfo player = DSSPlayerInfo.get((EntityPlayer)event.entity);
-			player.grantSkill(Skills.swordBasic);
-			player.grantSkill(Skills.backSlice);
-			player.grantSkill(Skills.mortalDraw);
-			player.grantSkill(Skills.parry);
-			player.grantSkill(Skills.risingCut);
-			player.grantSkill(Skills.dash);
+			player.grantSkill(Skills.swordBasic);	// 1
+			player.grantSkill(Skills.backSlice);	// 4
+			player.grantSkill(Skills.mortalDraw);	// 1
+			player.grantSkill(Skills.parry);		// 1
+			player.grantSkill(Skills.risingCut);	// 3
+			player.grantSkill(Skills.dash);			// 2
+			player.grantSkill(Skills.leapingBlow);	// 5
 		}
 	}
 	
